@@ -598,6 +598,7 @@ export {
   ApprovalAllowDecisionSchema,
   ApprovalTerminalReasonSchema,
   PluginApprovalSeveritySchema,
+  ApprovalScopeSchema,
   ExecApprovalPresentationSchema,
   PluginApprovalPresentationSchema,
   ApprovalPresentationSchema,
