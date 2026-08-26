@@ -205,6 +205,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["user-mail__inbox"],
     });
@@ -217,6 +219,12 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
       }),
     );
     expect(result?.tools.map((tool) => tool.name)).toEqual(["user-mail__inbox"]);
+    expect(result.mcpToolMaterialization).toEqual({
+      provider: "openai",
+      model: "gpt-5.4-codex",
+      materializedToolCount: 1,
+      toolsAllowMatchedToolCount: 1,
+    });
     await result?.dispose();
   });
 
@@ -227,12 +235,39 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-denied",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["read"],
     });
 
     expect(result?.tools).toEqual([]);
     await result?.dispose();
+  });
+
+  it("captures explicit-cap matches before conversation policy and Codex approval", async () => {
+    const runtime = makeRuntime({ sessionId: "scheduled-policy", requesterSenderId: "unused" });
+    delete runtime.requesterScope;
+    runtime.peekCatalog()!.servers["user-mail"]!.codexApprovalMode = "approve";
+    mocks.getOrCreateSessionMcpRuntime.mockResolvedValue(runtime);
+
+    const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
+      sessionId: "scheduled-policy",
+      provider: "openai",
+      model: "gpt-5.4-codex",
+      workspaceDir: "/workspace",
+      toolsAllow: ["user-mail__inbox"],
+      policyContext: {
+        conversationToolPolicy: { deny: ["user-mail__inbox"] },
+      },
+    });
+
+    expect(result.tools).toEqual([]);
+    expect(result.mcpToolMaterialization).toMatchObject({
+      materializedToolCount: 1,
+      toolsAllowMatchedToolCount: 1,
+    });
+    await result.dispose();
   });
 
   it("binds persistent app views to the same finite scheduled cap", async () => {
@@ -275,6 +310,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-app",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       sessionKey: "agent:main:main",
       agentId: "main",
       workspaceDir: "/workspace",
@@ -349,6 +386,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-app-approval",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       sessionKey: "agent:main:main",
       agentId: "main",
       workspaceDir: "/workspace",
@@ -416,6 +455,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-app-yolo",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       sessionKey: "agent:main:main",
       agentId: "main",
       workspaceDir: "/workspace",
@@ -441,6 +482,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-empty",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["*"],
     });
@@ -472,6 +515,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-diagnostic",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["*"],
     });
@@ -491,6 +536,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-prompt",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["user-mail__inbox"],
     });
@@ -511,6 +558,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-yolo",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["user-mail__inbox"],
       autoApproveCodexAppServerApprovals: true,
@@ -537,6 +586,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: `scheduled-${mode}`,
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["user-mail__inbox"],
     });
@@ -554,6 +605,8 @@ describe("materializeStaticMcpToolsForScheduledHarnessRunCore", () => {
 
     const result = await materializeStaticMcpToolsForScheduledHarnessRunCore({
       sessionId: "scheduled-unknown",
+      provider: "openai",
+      model: "gpt-5.4-codex",
       workspaceDir: "/workspace",
       toolsAllow: ["user-mail__inbox"],
     });

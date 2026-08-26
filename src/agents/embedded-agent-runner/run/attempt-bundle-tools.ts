@@ -150,6 +150,14 @@ export async function prepareEmbeddedAttemptBundleTools(params: {
       effectiveToolsAllow,
       { toolMeta: (tool) => getPluginToolMeta(tool) },
     );
+    const mcpToolMaterialization = bundleMcpRuntime
+      ? {
+          provider: params.attempt.provider,
+          model: params.attempt.modelId,
+          materializedToolCount: bundleMcpRuntime.tools.length,
+          toolsAllowMatchedToolCount: allowedBundleMcpTools.length,
+        }
+      : undefined;
     const allowedBundleLspTools = applyEmbeddedAttemptToolsAllow(
       bundleLspRuntime?.tools ?? [],
       effectiveToolsAllow,
@@ -239,6 +247,7 @@ export async function prepareEmbeddedAttemptBundleTools(params: {
       bundleLspRuntime,
       bundleMcpRuntime,
       clientTools,
+      mcpToolMaterialization,
       tools,
       uncompactedEffectiveTools: [...schemaProjection.tools],
     };

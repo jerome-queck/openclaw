@@ -324,6 +324,8 @@ export async function prepareCodexAttemptTools(runtime: CodexAttemptRuntime) {
     ? await materializeStaticMcpToolsForScheduledHarnessRun({
         sessionId: params.sessionId,
         sessionKey: params.sessionKey,
+        provider: params.provider,
+        model: params.modelId,
         workspaceDir: effectiveWorkspace,
         agentDir: policyContext.agentDir,
         cfg: params.config,
@@ -491,6 +493,8 @@ export async function prepareCodexAttemptTools(runtime: CodexAttemptRuntime) {
         try {
           materialized = await materializeStaticMcpToolsForScheduledHarnessRun({
             sessionId: authorityRuntimeId,
+            provider: params.provider,
+            model: params.modelId,
             workspaceDir: effectiveWorkspace,
             agentDir: policyContext.agentDir,
             cfg: params.config,

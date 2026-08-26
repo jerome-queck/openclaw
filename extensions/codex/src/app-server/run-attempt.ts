@@ -20,6 +20,24 @@ import { startCodexAttemptTurn } from "./run-attempt-turn-start.js";
 import { createCodexAttemptTurnState } from "./run-attempt-turn-state.js";
 import type { CodexRunAttemptOptions } from "./run-attempt-types.js";
 
+function withMcpToolMaterialization(
+  error: unknown,
+  materialization: EmbeddedRunAttemptResult["mcpToolMaterialization"],
+): unknown {
+  if (!materialization) {
+    return error;
+  }
+  const carrier =
+    error && typeof error === "object" && Object.isExtensible(error)
+      ? error
+      : new Error(String(error), { cause: error });
+  Object.defineProperty(carrier, "mcpToolMaterialization", {
+    configurable: true,
+    value: materialization,
+  });
+  return carrier;
+}
+
 export async function runCodexAppServerAttempt(
   params: EmbeddedRunAttemptParamsV2,
   options: CodexRunAttemptOptions,
@@ -27,65 +45,81 @@ export async function runCodexAppServerAttempt(
   const connection = await prepareCodexAttemptConnection({ params, options });
   const runtime = await prepareCodexAttemptRuntime(connection);
   const attemptTools = await prepareCodexAttemptTools(runtime);
-  const attemptContext = await prepareCodexAttemptContext(runtime, attemptTools);
-  const attemptPrompt = await prepareCodexAttemptPrompt(attemptContext);
-  const resources = prepareCodexAttemptResources(attemptPrompt);
-  attemptTools.runtimeYieldCompletionClaim.current = () =>
-    resources.state.nativeHookRelay?.hasClaimedDirectChild() ?? false;
-  await startCodexAttemptRuntime(resources);
-
-  const turnRuntime = createCodexAttemptTurnState(resources);
-  const lifecycle = createCodexAttemptLifecycleController(resources, turnRuntime);
-  const notifications = createCodexAttemptNotificationController(resources, turnRuntime, lifecycle);
-  const serverRequests = createCodexAttemptServerRequestController(
-    resources,
-    turnRuntime,
-    lifecycle,
-  );
-  const { ensureCurrentThreadRoute } = await prepareCodexAttemptRoute(
-    resources,
-    turnRuntime,
-    notifications,
-    serverRequests.handleServerRequest,
-  );
-  const turnRequest = await prepareCodexAttemptTurnRequest(
-    resources,
-    turnRuntime,
-    ensureCurrentThreadRoute,
-    notifications.waitForActiveNativeTurnCompletion,
-  );
-  const turnStart = await startCodexAttemptTurn(resources, turnRuntime, notifications, turnRequest);
-  if ("result" in turnStart) {
-    return turnStart.result;
-  }
-  const activeTurn = await activateCodexAttemptTurn(
-    resources,
-    turnRuntime,
-    lifecycle,
-    notifications,
-    turnStart.turn,
-  );
-
-  let finalizedResult: EmbeddedRunAttemptResult;
+  const mcpToolMaterialization = attemptTools.scheduledConfiguredMcp?.mcpToolMaterialization;
   try {
-    finalizedResult = await finalizeCodexAttempt(
+    const attemptContext = await prepareCodexAttemptContext(runtime, attemptTools);
+    const attemptPrompt = await prepareCodexAttemptPrompt(attemptContext);
+    const resources = prepareCodexAttemptResources(attemptPrompt);
+    attemptTools.runtimeYieldCompletionClaim.current = () =>
+      resources.state.nativeHookRelay?.hasClaimedDirectChild() ?? false;
+    await startCodexAttemptRuntime(resources);
+
+    const turnRuntime = createCodexAttemptTurnState(resources);
+    const lifecycle = createCodexAttemptLifecycleController(resources, turnRuntime);
+    const notifications = createCodexAttemptNotificationController(
+      resources,
+      turnRuntime,
+      lifecycle,
+    );
+    const serverRequests = createCodexAttemptServerRequestController(
+      resources,
+      turnRuntime,
+      lifecycle,
+    );
+    const { ensureCurrentThreadRoute } = await prepareCodexAttemptRoute(
+      resources,
+      turnRuntime,
+      notifications,
+      serverRequests.handleServerRequest,
+    );
+    const turnRequest = await prepareCodexAttemptTurnRequest(
+      resources,
+      turnRuntime,
+      ensureCurrentThreadRoute,
+      notifications.waitForActiveNativeTurnCompletion,
+    );
+    const turnStart = await startCodexAttemptTurn(
+      resources,
+      turnRuntime,
+      notifications,
+      turnRequest,
+    );
+    if ("result" in turnStart) {
+      return mcpToolMaterialization
+        ? { ...turnStart.result, mcpToolMaterialization }
+        : turnStart.result;
+    }
+    const activeTurn = await activateCodexAttemptTurn(
       resources,
       turnRuntime,
       lifecycle,
       notifications,
-      turnRequest,
-      activeTurn,
+      turnStart.turn,
     );
-  } finally {
-    await cleanupCodexAttempt(resources, turnRuntime, lifecycle, turnRequest, activeTurn);
+
+    let finalizedResult: EmbeddedRunAttemptResult;
+    try {
+      finalizedResult = await finalizeCodexAttempt(
+        resources,
+        turnRuntime,
+        lifecycle,
+        notifications,
+        turnRequest,
+        activeTurn,
+      );
+    } finally {
+      await cleanupCodexAttempt(resources, turnRuntime, lifecycle, turnRequest, activeTurn);
+    }
+    // Cleanup retires the execution lease; only then can device loss no longer
+    // race the final result captured during asynchronous terminal processing.
+    if (
+      resources.state.executionDisconnectError &&
+      !connection.terminalState.explicitCancellationObserved
+    ) {
+      throw resources.state.executionDisconnectError;
+    }
+    return finalizedResult;
+  } catch (error) {
+    throw withMcpToolMaterialization(error, mcpToolMaterialization);
   }
-  // Cleanup retires the execution lease; only then can device loss no longer
-  // race the final result captured during asynchronous terminal processing.
-  if (
-    resources.state.executionDisconnectError &&
-    !connection.terminalState.explicitCancellationObserved
-  ) {
-    throw resources.state.executionDisconnectError;
-  }
-  return finalizedResult;
 }

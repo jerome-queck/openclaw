@@ -217,6 +217,52 @@ describe("prepareEmbeddedAttemptBundleTools", () => {
     expect(inheritedToolAllowlist).not.toContain("server__delete");
   });
 
+  it.each([
+    { cap: "notes__missing", materializedName: "notes__search" },
+    { cap: "notes__search", materializedName: "notes__search-2" },
+  ])(
+    "records zero post-materialization matches for cap $cap against $materializedName",
+    async ({ cap, materializedName }) => {
+      mocks.getOrCreateSessionMcpRuntime.mockResolvedValue({});
+      mocks.materializeBundleMcpToolsForRun.mockResolvedValue({
+        tools: [{ name: materializedName }],
+      });
+      const input = createInput([], []);
+      input.attempt.toolsAllow = [cap];
+      input.preparedToolBase.effectiveToolsAllow = [cap];
+
+      const result = await prepareEmbeddedAttemptBundleTools(input);
+
+      expect(result.mcpToolMaterialization).toEqual({
+        provider: "provider",
+        model: "model",
+        materializedToolCount: 1,
+        toolsAllowMatchedToolCount: 0,
+      });
+    },
+  );
+
+  it("records explicit-cap matches before conversation policy removes the tool", async () => {
+    mocks.getOrCreateSessionMcpRuntime.mockResolvedValue({});
+    mocks.materializeBundleMcpToolsForRun.mockResolvedValue({
+      tools: [{ name: "notes__search" }],
+    });
+    mocks.applyFinalEffectiveToolPolicy.mockReturnValue([]);
+    const input = createInput([], []);
+    input.attempt.toolsAllow = ["notes__search"];
+    input.preparedToolBase.effectiveToolsAllow = ["notes__search"];
+
+    const result = await prepareEmbeddedAttemptBundleTools(input);
+
+    expect(result.mcpToolMaterialization).toEqual({
+      provider: "provider",
+      model: "model",
+      materializedToolCount: 1,
+      toolsAllowMatchedToolCount: 1,
+    });
+    expect(result.tools).toEqual([]);
+  });
+
   it("captures the post-quarantine creator cap with plugin ownership", async () => {
     const coreTool = { name: "automations" };
     const allowedMcpTool = { name: "mail__read" };
