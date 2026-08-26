@@ -130,8 +130,9 @@ function resolveInProcessGatewayDispatch(
             ? undefined
             : (explicitSystemActor ?? { kind: "system" })))
     : (scopedRoleActor ?? explicitSystemActor);
-  const context =
-    options?.resolveGatewayContext?.() ?? scope?.resolveGatewayContext?.() ?? scope?.context;
+  const context = options?.resolveGatewayContext
+    ? options.resolveGatewayContext()
+    : (scope?.resolveGatewayContext?.() ?? scope?.context);
   const isWebchatConnect = scope?.isWebchatConnect ?? (() => false);
   if (!context) {
     throw new Error(
@@ -300,7 +301,9 @@ export function getInProcessGatewayRequestContext(
   resolveGatewayContext?: GatewayContextResolver,
 ): GatewayRequestContext | undefined {
   const scope = getPluginRuntimeGatewayRequestScope();
-  return resolveGatewayContext?.() ?? scope?.resolveGatewayContext?.() ?? scope?.context;
+  return resolveGatewayContext
+    ? resolveGatewayContext()
+    : (scope?.resolveGatewayContext?.() ?? scope?.context);
 }
 
 export async function dispatchGatewayMethodInProcess<T>(
