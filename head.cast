@@ -1,0 +1,5 @@
+{"version":2,"width":110,"height":24,"timestamp":1793672049,"command":"bash run.sh /workspace/oc-191360 head"}
+[20.863361, "o", "$ openclaw gateway call models.list --params '{\"provider\":\"qwen-token-plan\",\"refresh\":true}'\r\n"]
+[22.854064, "o", "qwen-token-plan models: 5\r\n  qwen3.7-plus\r\n  qwen3.8-max\r\n  auto\r\n  deepseek-v4-pro\r\n  glm-5.3\r\nproviderOutcomes: [{\"provider\":\"qwen-token-plan\",\"status\":\"ready\"}]\r\n"]
+[24.870163, "o", "state: /tmp/oc191360-head.nefz\r\n"]
+[24.870524, "x", "0"]
