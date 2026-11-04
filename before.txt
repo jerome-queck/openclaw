@@ -1,0 +1,38 @@
+# 0812bf07d27 (oc-192745-base); config exists: no
+$ openclaw gateway run --port abc
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78
+$ openclaw gateway run --bind bogus
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78
+$ openclaw gateway run --auth bogus
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78
+$ openclaw gateway run --tailscale bogus
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78
+$ openclaw gateway run --ws-log bogus
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78
+$ openclaw gateway run --port abc --allow-unconfigured
+2026-11-04T19:38:22.522+08:00 [gateway] loading configuration…
+2026-11-04T19:38:22.537+08:00 Invalid --port. Use a port number from 1 to 65535, for example 18789.
+exit=1
+$ openclaw gateway run --bind bogus --allow-unconfigured
+2026-11-04T19:38:24.721+08:00 [gateway] loading configuration…
+2026-11-04T19:38:24.730+08:00 Invalid --bind. Use "loopback", "lan", "tailnet", "auto", or "custom".
+exit=1
+$ openclaw gateway run --auth bogus --allow-unconfigured
+2026-11-04T19:38:26.888+08:00 [gateway] loading configuration…
+2026-11-04T19:38:26.897+08:00 Invalid --auth. Use "none", "token", "password", or "trusted-proxy".
+exit=1
+$ openclaw gateway run --tailscale bogus --allow-unconfigured
+2026-11-04T19:38:29.023+08:00 [gateway] loading configuration…
+2026-11-04T19:38:29.032+08:00 Invalid --tailscale. Use "off", "serve", or "funnel".
+exit=1
+$ openclaw gateway run --ws-log bogus --allow-unconfigured
+Invalid --ws-log. Use "auto", "full", or "compact".
+exit=1
+$ openclaw gateway run 
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78

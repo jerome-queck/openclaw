@@ -1,0 +1,34 @@
+# c0f5930053f (oc-gw-flag-order); config exists: no
+$ openclaw gateway run --port abc
+Invalid --port. Use a port number from 1 to 65535, for example 18789.
+exit=1
+$ openclaw gateway run --bind bogus
+Invalid --bind. Use "loopback", "lan", "tailnet", "auto", or "custom".
+exit=1
+$ openclaw gateway run --auth bogus
+Invalid --auth. Use "none", "token", "password", or "trusted-proxy".
+exit=1
+$ openclaw gateway run --tailscale bogus
+Invalid --tailscale. Use "off", "serve", or "funnel".
+exit=1
+$ openclaw gateway run --ws-log bogus
+Invalid --ws-log. Use "auto", "full", or "compact".
+exit=1
+$ openclaw gateway run --port abc --allow-unconfigured
+Invalid --port. Use a port number from 1 to 65535, for example 18789.
+exit=1
+$ openclaw gateway run --bind bogus --allow-unconfigured
+Invalid --bind. Use "loopback", "lan", "tailnet", "auto", or "custom".
+exit=1
+$ openclaw gateway run --auth bogus --allow-unconfigured
+Invalid --auth. Use "none", "token", "password", or "trusted-proxy".
+exit=1
+$ openclaw gateway run --tailscale bogus --allow-unconfigured
+Invalid --tailscale. Use "off", "serve", or "funnel".
+exit=1
+$ openclaw gateway run --ws-log bogus --allow-unconfigured
+Invalid --ws-log. Use "auto", "full", or "compact".
+exit=1
+$ openclaw gateway run 
+Missing config. Run `openclaw setup` or set gateway.mode=local (or pass --allow-unconfigured).
+exit=78
