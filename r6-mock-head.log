@@ -1,0 +1,4 @@
+POST /v1/responses images=[data:image/jpeg;base64,] -> 400
+POST /v1/responses images=[none] -> 200
+POST /v1/responses images=[data:image/jpeg;base64,] -> 400
+POST /v1/responses images=[none] -> 200
