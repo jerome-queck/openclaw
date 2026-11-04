@@ -1,0 +1,38 @@
+# cee08525d18 fix(workboard): recover after database connection loss (#192017)
+
+$ openclaw gateway restart --skip-deferral
+[openclaw] The CLI command failed.
+[openclaw] For help, run `openclaw doctor`.
+[exit 1]
+
+$ openclaw gateway restart --safe --force
+[openclaw] The CLI command failed.
+[openclaw] For help, run `openclaw doctor`.
+[exit 1]
+
+$ openclaw gateway restart --safe --wait 5s
+[openclaw] The CLI command failed.
+[openclaw] For help, run `openclaw doctor`.
+[exit 1]
+
+$ openclaw gateway restart --force --wait 5s
+[openclaw] The CLI command failed.
+[openclaw] For help, run `openclaw doctor`.
+[exit 1]
+
+$ openclaw gateway restart --safe --preserve-definition
+[openclaw] The CLI command failed.
+[openclaw] For help, run `openclaw doctor`.
+[exit 1]
+
+$ openclaw gateway restart --skip-deferral --json
+{
+  "ok": false,
+  "error": {
+    "type": "cli_error",
+    "message": "--skip-deferral requires --safe"
+  }
+}
+[openclaw] The CLI command failed.
+[openclaw] For help, run `openclaw doctor`.
+[exit 1]

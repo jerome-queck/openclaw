@@ -1,0 +1,32 @@
+# a263687138e fix(cli): show gateway restart flag-conflict reasons
+
+$ openclaw gateway restart --skip-deferral
+Error: --skip-deferral requires --safe
+[exit 1]
+
+$ openclaw gateway restart --safe --force
+Error: --safe cannot be combined with --force; omit --safe to begin a forced restart
+[exit 1]
+
+$ openclaw gateway restart --safe --wait 5s
+Error: --safe cannot be combined with --wait; safe restart uses gateway deferral
+[exit 1]
+
+$ openclaw gateway restart --force --wait 5s
+Error: --force cannot be combined with --wait
+[exit 1]
+
+$ openclaw gateway restart --safe --preserve-definition
+Error: --preserve-definition requires a native restart without --safe
+[exit 1]
+
+$ openclaw gateway restart --skip-deferral --json
+{
+  "ok": false,
+  "error": {
+    "type": "cli_error",
+    "message": "--skip-deferral requires --safe"
+  }
+}
+Error: --skip-deferral requires --safe
+[exit 1]
